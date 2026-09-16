@@ -1,0 +1,131 @@
+
+<head><style>
+
+body {
+  font-family: sans-serif;
+  text-align: center;
+  margin: 20px;
+}
+
+.controles {
+  margin: 10px 0;
+}
+#vistaPrevia {
+  position: relative;
+  width: 640px;
+  height: 480px;
+  margin: 0 auto;
+  background-color: #ccc;
+}
+
+#video, #marco {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#marco {
+  z-index: 10;
+}
+</style></head>
+<body>
+<div class="contenedor">
+  <h2>Fotos con Marco</h2>
+
+  <div class="controles">
+    <button id="btnActivar">Activar Cámara</button>
+    <input type="file" id="subirMarco" accept="image/png">
+  </div>
+
+  <div class="controles">
+    <input type="text" id="textoAlumno" placeholder="Escribe tu nombre aquí...">
+  </div>
+
+  <div id="vistaPrevia">
+    <video id="video" autoplay playsinline></video>
+    <img id="marco" src="" alt="Marco" style="display: none;">
+  </div>
+
+  <div class="controles">
+    <button id="btnCapturar" disabled>Capturar y Descargar</button>
+  </div>
+
+  <canvas id="canvas" style="display: none;"></canvas>
+</div>
+<script>
+
+const video = document.getElementById('video');
+const marco = document.getElementById('marco');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+const btnActivar = document.getElementById('btnActivar');
+const inputSubirMarco = document.getElementById('subirMarco');
+const btnCapturar = document.getElementById('btnCapturar');
+const textoAlumno = document.getElementById('textoAlumno');
+
+// 1. Activar la cámara
+btnActivar.addEventListener('click', async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    btnActivar.disabled = true;
+    
+    // Si ya hay un marco cargado, activar botón de captura
+    if (marco.src && marco.src !== window.location.href) {
+      btnCapturar.disabled = false;
+    }
+  } catch (error) {
+    alert("Error al acceder a la cámara.");
+  }
+});
+
+// 2. Cargar el marco PNG desde la computadora
+inputSubirMarco.addEventListener('change', (e) => {
+  const archivo = e.target.files[0];
+  if (archivo) {
+    marco.src = URL.createObjectURL(archivo);
+    marco.style.display = "block";
+    
+    if (video.srcObject) {
+      btnCapturar.disabled = false;
+    }
+  }
+});
+
+// 3. Capturar y descargar
+btnCapturar.addEventListener('click', () => {
+  // Configurar dimensiones del canvas igual al video
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+
+  // Dibujar video y marco
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(marco, 0, 0, canvas.width, canvas.height);
+
+  // Dibujar texto solo si el usuario escribió algo
+  const texto = textoAlumno.value.trim();
+  if (texto !== "") {
+    ctx.font = "bold 30px Arial";
+    ctx.textAlign = "center";
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+
+    const x = canvas.width / 2;
+    const y = canvas.height - 30;
+
+    ctx.strokeText(texto, x, y);
+    ctx.fillText(texto, x, y);
+  }
+
+  // Descargar la imagen resultante
+  const enlace = document.createElement('a');
+  enlace.download = "fotografia.png";
+  enlace.href = canvas.toDataURL("image/png");
+  enlace.click();
+});
+</script>
+</body>
