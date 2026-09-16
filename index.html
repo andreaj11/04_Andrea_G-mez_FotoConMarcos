@@ -66,14 +66,12 @@ const inputSubirMarco = document.getElementById('subirMarco');
 const btnCapturar = document.getElementById('btnCapturar');
 const textoAlumno = document.getElementById('textoAlumno');
 
-// 1. Activar la cámara
 btnActivar.addEventListener('click', async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     video.srcObject = stream;
     btnActivar.disabled = true;
     
-    // Si ya hay un marco cargado, activar botón de captura
     if (marco.src && marco.src !== window.location.href) {
       btnCapturar.disabled = false;
     }
@@ -82,7 +80,6 @@ btnActivar.addEventListener('click', async () => {
   }
 });
 
-// 2. Cargar el marco PNG desde la computadora
 inputSubirMarco.addEventListener('change', (e) => {
   const archivo = e.target.files[0];
   if (archivo) {
@@ -95,17 +92,13 @@ inputSubirMarco.addEventListener('change', (e) => {
   }
 });
 
-// 3. Capturar y descargar
 btnCapturar.addEventListener('click', () => {
-  // Configurar dimensiones del canvas igual al video
   canvas.width = video.videoWidth || 640;
   canvas.height = video.videoHeight || 480;
 
-  // Dibujar video y marco
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   ctx.drawImage(marco, 0, 0, canvas.width, canvas.height);
 
-  // Dibujar texto solo si el usuario escribió algo
   const texto = textoAlumno.value.trim();
   if (texto !== "") {
     ctx.font = "bold 30px Arial";
@@ -118,7 +111,6 @@ btnCapturar.addEventListener('click', () => {
     ctx.fillText(texto, x, y);
   }
 
-  // Descargar la imagen resultante
   const enlace = document.createElement('a');
   enlace.download = "fotografia.png";
   enlace.href = canvas.toDataURL("image/png");
